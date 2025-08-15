@@ -1,0 +1,26 @@
+{
+  "name": "filloutsalesforceintegration",
+  "version": "1.0.0",
+  "description": "A custom middleware function to receive a webhook containing a Fillout form response and create a new lead.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mquigs00/FilloutSalesforceIntegration.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mquigs00/FilloutSalesforceIntegration/issues"
+  },
+  "homepage": "https://github.com/mquigs00/FilloutSalesforceIntegration#readme",
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.864.0",
+    "axios": "^1.11.0",
+    "date-fns": "^4.1.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
