@@ -5,10 +5,15 @@ import jwt from "jsonwebtoken";
 
 const client = new SecretsManagerClient({region: "us-east-1"});
 
+/**
+ * Retrieves the Salesforce private key from Secrets Manager
+ * 
+ * @returns the Salesforce private key
+ */
 async function getPrivateKey() {
     try {
         const command = new GetSecretValueCommand({
-            SecretId: "Salesforce-Private-SSL-Key"
+            SecretId: "arn:aws:secretsmanager:us-east-1:182486377871:secret:Salesforce-Sandbox-Private-Key-ZBweXe"
         });
 
         const response = await client.send(command);
@@ -16,6 +21,8 @@ async function getPrivateKey() {
         if (!response.SecretString) {
             throw new Error("Secret String for private key is empty or undefined");
         }
+
+        console.log("Received response for Salesforce private key");
 
         return response.SecretString;
     } catch (error) {
@@ -25,15 +32,15 @@ async function getPrivateKey() {
 }
 
 /**
- * Prints all of the Field Names and Field Labels that are available for the given Salesforce Objects API
+ * Logs the name and label of each field for the given Object
  * 
- * @param {String} objectName - the name of the Salesforce Object (ex "Lead", "Contact", "Account")
- * @param {JSON} tokenData - the JSON webtoken
- * @returns {JSON} - response.data
+ * @param {string} objectName 
+ * @param {string} salesforceAccessToken
+ * @returns
  */
 async function verifySalesforceSchema(objectName, tokenData) {
     try {
-        const instanceUrl = tokenData.instance_url || 'https://orgfarm-b10ac254af-dev-ed.develop.my.salesforce.com';
+        const instanceUrl = tokenData.instance_url
 
         const response = await axios.get(
             `${instanceUrl}/services/data/v61.0/sobjects/${objectName}/describe`,
@@ -45,6 +52,7 @@ async function verifySalesforceSchema(objectName, tokenData) {
             }
         )
 
+        // print each field name and label
         console.log(`Fields for ${objectName}`);
         response.data.fields.forEach(field => {
             console.log(`${field.name}: ${field.label}`);
@@ -65,7 +73,7 @@ async function verifySalesforceSchema(objectName, tokenData) {
 async function getSalesforceSecrets() {
     try {
         const command = new GetSecretValueCommand({
-            SecretId: "arn:aws:secretsmanager:us-east-1:182486377871:secret:Salesforce-API-Credentials-adUbms"
+            SecretId: "arn:aws:secretsmanager:us-east-1:182486377871:secret:SF-Sandbox-Credentials-OMWAfi"
         });
     
         const response = await client.send(command);
@@ -74,9 +82,10 @@ async function getSalesforceSecrets() {
             throw new Error("Secret String is empty or undefined");
         }
 
+        console.log("Received response for Salesforce credentials");
         const secrets = JSON.parse(response.SecretString);
-        
-        const privateKey = await getPrivateKey();
+
+        const privateKey = await getPrivateKey()
 
         return {
             consumerKey: secrets.consumerKey,
@@ -100,11 +109,12 @@ async function getSalesforceAccessToken() {
         const salesforceCredentials = await getSalesforceSecrets();
 
         const consumerKey = salesforceCredentials.consumerKey;
-        const privateKey = await getPrivateKey();
+        const privateKey = salesforceCredentials.privateKey;
         const reformattedPrivateKey = privateKey.replace(/\\n/g, '\n');
-        console.log("Reformatted Private Key: " + reformattedPrivateKey.substring(0, 50));
         const username = salesforceCredentials.username;
         const loginUrl = salesforceCredentials.loginUrl;
+
+        console.log("Login URL: " + loginUrl + " Username = " + username);
 
         const jwtQuery = {
             iss: consumerKey,
@@ -114,6 +124,10 @@ async function getSalesforceAccessToken() {
         };
 
         const signedJWT = jwt.sign(jwtQuery, reformattedPrivateKey, {algorithm: 'RS256'});
+        const decoded = jwt.decode(signedJWT, {complete: true});
+        console.log(decoded.payload);
+
+        //console.log("Signed JWT Token: " + JSON.stringify(jwt.decode(signedJWT, {complete: true})));
 
         const res = await axios.post(
             `${loginUrl}/services/oauth2/token`,
@@ -138,10 +152,10 @@ async function getSalesforceAccessToken() {
 };
 
 /**
- * Gets the corresponding Salesforce State Code for the given state name
+ * Gets the Salesforce state code that corresponds to the full state name
  * 
- * @param {String} state - the full name of the state
- * @returns {String} stateDict[state] - the corresponding Salesforce State Code
+ * @param {string} state
+ * @returns the corresponding two letter state code
  */
 function getStateCode(state) {
     const stateDict = {
@@ -221,6 +235,7 @@ async function duplicateLeadExits(clientData, tokenData) {
     try {
         const instanceUrl = tokenData.instance_url || 'https://orgfarm-b10ac254af-dev-ed.develop.my.salesforce.com';
 
+        // query to check for leads with the same first name, last name, and email address
         const selectDuplicateQuery = `
             SELECT FirstName, LastName, Email
             FROM Lead
@@ -253,11 +268,12 @@ async function duplicateLeadExits(clientData, tokenData) {
 }
 
 /**
- * Creates a new Lead in Salesforce
+ * Creates the lead in Salesforce
  * 
- * @param {JSON} clientData 
- * @param {JSON} tokenData 
- * @returns 
+ * @param {*} clientData
+ * @param {*} salesforceAccessToken
+ * 
+ * @returns the id of the new Lead record
  */
 async function insertLead(clientData, tokenData) {
     try {
@@ -272,24 +288,23 @@ async function insertLead(clientData, tokenData) {
                 Street: clientData.address.streetAddress,
                 City: clientData.address.city,
                 PostalCode: clientData.address.zipcode,
-                CountryCode: "US",
-                StateCode: clientData.address.stateCode,
+                Country: "US",
+                State: clientData.address.state,
                 Phone: clientData.contact.phone,
                 Email: clientData.contact.email,
                 Primary_Language__c: clientData.contact.primaryLanguage,
-                Family_Type__c: clientData.household.familyType,
-                Housing_Status__c: clientData.household.housingStatus,
                 Household_Size__c: clientData.household.householdSize,
                 Estimated_Monthly_Household_Income__c: clientData.household.householdMonthlyIncome,
                 Date__c: clientData.dateOfSubmission,
                 Company: "Self",
                 Status: "Closed - Converted",
-                LeadSource: "Fillout"
+                OwnerId: '005cn000006WqRS'
             },
             {
                 headers: {
                     'Authorization': `Bearer ${tokenData.access_token}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Sforce-Auto-Assign': 'FALSE'
                 }
             }
         );
@@ -301,16 +316,16 @@ async function insertLead(clientData, tokenData) {
 };
 
 /**
+ * Creates the Account
  * 
- * @param {JSON} accountData - all the Fillout answers that pertain to the Account
- * @param {String} leadId - the 18 digit ID of the Lead
- * @param {JSON} tokenData
- * 
- * @returns response.data.id - the Account ID of the newly created Account
+ * @param {*} accountData 
+ * @param {*} leadId 
+ * @param {*} salesforceAccessToken
+ * @returns 
  */
 async function createAccount(accountData, leadId, tokenData) {
     try {
-        const instanceUrl = tokenData.instance_url || 'https://orgfarm-b10ac254af-dev-ed.develop.my.salesforce.com';
+        const instanceUrl = tokenData.instance_url
 
         const response = await axios.post(
             `${instanceUrl}/services/data/v61.0/sobjects/Account`,
@@ -321,11 +336,9 @@ async function createAccount(accountData, leadId, tokenData) {
                 Housing_Status__c: accountData.housingStatus,
                 Address__Street__s: accountData.address.streetAddress,
                 Address__City__s: accountData.address.city,
-                Address__PostalCode__s: accountData.address.zipcode,
-                Address__CountryCode__s: "US",
                 Address__StateCode__s: accountData.address.stateCode,
-                Lead_ID__c: leadId,
-                Source__c: "Fillout"
+                Address__CountryCode__s: "US",
+                Address__PostalCode__s: accountData.address.zipcode,
             },
             {
                 headers: {
@@ -343,19 +356,18 @@ async function createAccount(accountData, leadId, tokenData) {
 }
 
 /**
- * Creates a new Salesforce Contact for each household member entered in the Fillout form
+ * Inserts all of the household members into Salesforce as a Contact and link it to their Account
  * 
- * @param {List} householdMembers - the list of household member objects
- * @param {String} leadId - the 18 digit ID of the Lead
- * @param {String} accountId - the Account ID that the Contacts will belong to
- * @param {JSON} tokenData 
+ * @param {*} householdMembers
+ * @param {*} leadId
+ * @param {*} accountId
+ * @param {*} salesforceAccessToken
  */
 async function insertHouseholdMembers(householdMembers, leadId, accountId, tokenData) {
     console.log("Starting insertHouseholdMembers");
-    const instanceUrl = tokenData.instance_url || 'https://orgfarm-b10ac254af-dev-ed.develop.my.salesforce.com';
+    const instanceUrl = tokenData.instance_url
     console.log("Instance URL: " + instanceUrl);
 
-    // Fillout form uses a Yes/No answer for disability questions. Map them to the Salesforce checkbox/boolean options
     const disabledMap = {
         "Yes": true,
         "No": false
@@ -388,8 +400,6 @@ async function insertHouseholdMembers(householdMembers, leadId, accountId, token
                     Health_Insurance_Coverage__c: householdMembers[i].healthInsuranceCoverage,
                     Disabled__c: disabledMap[householdMembers[i].isDisabled],
                     AccountId: accountId,
-                    Lead_ID__c: leadId,
-                    Source__c: "Fillout"
                 },
                 {
                     headers: {
@@ -412,25 +422,107 @@ async function insertHouseholdMembers(householdMembers, leadId, accountId, token
 }
 
 /**
+ * Retrieve the answer from the Fillout answers
  * 
- * @param {List} questions 
- * @param {String} questionName - the question text ("Member 2 Is Disabled?")
+ * @param {} questions 
+ * @param {*} questionName 
  * @returns 
  */
 function getAnswerForQuestion(questions, questionName) {
-    const questionObj = questions.find(question => question.name === questionName);         // find the question with the given name
+    const questionObj = questions.find(question => question.name === questionName);
 
     if (!questionObj) {
         throw new Error(`Question with name ${questionName} not found`);
     }
 
-    return questionObj.value;                                                               // value is the user's answer to the question
+    return questionObj.value;
 };
+
+let cachedFilloutKey;
+
+/**
+ * 
+ * @returns 
+ */
+async function getFilloutKey() {
+    if (cachedFilloutKey) {
+        return cachedFilloutKey;
+    }
+
+    const command = new GetSecretValueCommand({
+        SecretId: "fillout-api"
+    });
+
+    const response = await client.send(command);
+    const secret = JSON.parse(response.SecretString);
+    cachedFilloutKey = secret.token;
+    return cachedFilloutKey;
+}
+
+/**
+ * 
+ * @param {*} documentUrl 
+ * @param {*} filloutKey 
+ * @returns 
+ */
+async function downloadIntake(documentUrl, filloutKey) {
+    try {
+        const response = await axios.get(documentUrl, {
+            headers: {
+                'Authorization': `Bearer ${filloutKey}`,
+                'Accept': 'application/pdf'
+            },
+            responseType: 'arraybuffer'
+        });
+
+        return Buffer.from(response.data);
+    } catch (error) {
+        console.error("Error downloading Fillout PDF:", {
+            status: error.response?.status
+        });
+        throw error;
+    }
+}
+
+/**
+ * Uploads the intake pdf file to the Salesforce record
+ * 
+ * @param {*} base64Pdf 
+ * @param {*} fileName 
+ * @param {} recordId 
+ * @param {*} tokenData 
+ * @returns 
+ */
+async function uploadIntakeToSalesforceRecord(base64Pdf, fileName, recordId, tokenData) {
+    const instanceUrl = tokenData.instance_url;
+
+    const response = await axios.post(
+        `${instanceUrl}/services/data/v61.0/sobjects/ContentVersion`,
+        {
+            Title: fileName,
+            PathOnClient: fileName,
+            VersionData: base64Pdf,
+            FirstPublishLocationId: recordId
+        },
+        {
+            headers: {
+                'Authorization': `Bearer ${tokenData.access_token}`,
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+
+    return response.data.id;
+}
 
 export const handler = async (event) => {
     console.log("Triggered");
 
+    console.log("Raw event:", JSON.stringify(event));
+
     const body = JSON.parse(event.body);
+    console.log("Parsed body:", JSON.stringify(body));
+
     let questions = body.submission.questions;
 
     const filloutId = body.submission.submissionId;
@@ -451,7 +543,11 @@ export const handler = async (event) => {
     const city = address.city;
     const state = address.state;
     const stateCode = getStateCode(state);
-    const zipcode = address.zipcode;
+    const zipcode = address.zipCode;
+
+    for (const key in address) {
+        console.log(`API Name: ${key}, Value: ${address[key]}`)
+    }
 
     let householdMembers = [];
     let client = {}
@@ -535,6 +631,8 @@ export const handler = async (event) => {
 
     const tokenData = await getSalesforceAccessToken();
 
+    await verifySalesforceSchema("Contact", tokenData);
+
     if (await duplicateLeadExits(clientData, tokenData)) {
         console.log("Duplicate lead exists");
         return {
@@ -547,9 +645,20 @@ export const handler = async (event) => {
     const leadId = await insertLead(clientData, tokenData);
     console.log("Lead inserted with id: " + leadId);
 
-    await verifySalesforceSchema("Account", tokenData);
-
     const accountId = await createAccount(accountData, leadId, tokenData);
+
+    let intakeURL = body.submission.documents[0].url;
+
+    const filloutKey = await getFilloutKey();
+    const intakeBuffer = await downloadIntake(intakeURL, filloutKey)
+
+    if (!intakeBuffer || intakeBuffer.length === 0) {
+        throw new Error("Download PDF is empty");
+    }
+
+    const base64Pdf = intakeBuffer.toString("base64");
+    await uploadIntakeToSalesforceRecord(base64Pdf, "BenePhilly Intake.pdf", leadId, tokenData);
+    await uploadIntakeToSalesforceRecord(base64Pdf, "BenePhilly Intake.pdf", accountId, tokenData);
 
     await insertHouseholdMembers(householdMembers, leadId, accountId, tokenData);
 
