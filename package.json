@@ -4,7 +4,7 @@
   "description": "A custom middleware function to receive a webhook containing a Fillout form response and create a new lead.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,6 @@
     "@aws-sdk/client-secrets-manager": "^3.864.0",
     "axios": "^1.11.0",
     "date-fns": "^4.1.0",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.3"
   }
 }
