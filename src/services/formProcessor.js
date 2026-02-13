@@ -1,17 +1,8 @@
-import { parseSubmission, downloadIntake } from '../utils/fillout.js';
+import { parseSubmission, fetchIntakeAsBase64} from '../utils/fillout.js';
 import {getSalesforceAuthToken, duplicateLeadExists, createLead, createAccount, insertHouseholdMembers, uploadIntakeToSalesforceRecord} from '../salesforce/client.js';
-import {getFilloutKey} from '../utils/secrets.js';
 
-async function fetchIntakeAsBase64(intakeURL, filloutKey) {
-    const intakeBuffer = await downloadIntake(intakeURL, filloutKey)
 
-    if (!intakeBuffer || intakeBuffer.length === 0) {
-        throw new Error("Download PDF is empty");
-    }
-    return intakeBuffer.toString("base64");
-}
-
-export async function processSubmission(body, dependencies) {
+async function processSubmission(body, dependencies) {
     const {householdMembers, leadData, accountData} = parseSubmission(body);
 
     const sfAuthToken = await dependencies.getToken();
@@ -21,7 +12,7 @@ export async function processSubmission(body, dependencies) {
     }
 
     const leadId = await dependencies.createLead(leadData, sfAuthToken);
-    const accountId = await dependencies.createAccount(accountData, leadId, sfAuthToken);
+    const accountId = await dependencies.createAccount(accountData, sfAuthToken);
 
     await dependencies.insertHouseholdMembers(householdMembers, accountId, sfAuthToken);
 
@@ -34,16 +25,19 @@ export async function processSubmission(body, dependencies) {
 }
 
 
-export async function processIntakeDocuments(body, leadId, accountId, sfAuthToken) {
+async function processIntakeDocuments(body, leadId, accountId, sfAuthToken) {
     let intakeURL = body.submission.documents[0].url;
-    if (!intakeURL) return;
-    const filloutKey = await getFilloutKey();
-    const base64Pdf = await fetchIntakeAsBase64(intakeURL, filloutKey);
+
+    if (!intakeURL) {
+        console.log("No intake document url found, can't upload intake pdf's!");
+    }
+    
+    const base64Pdf = await fetchIntakeAsBase64(intakeURL);
     await uploadIntakeToSalesforceRecord(base64Pdf, "BenePhilly Intake.pdf", leadId, sfAuthToken);
     await uploadIntakeToSalesforceRecord(base64Pdf, "BenePhilly Intake.pdf", accountId, sfAuthToken);
 }
 
-export const handler = async (event) => {
+export const processForm = async (event) => {
     const body = JSON.parse(event.body);
 
     const result = await processSubmission(body, {
@@ -55,7 +49,7 @@ export const handler = async (event) => {
     });
 
     if (result.status === 'success') {
-        await processIntakeDocuments(body, result.leadId, result.accountId, result.salesforceAuthToken);
+        await processIntakeDocuments(body, result.leadId, result.accountId, result.sfAuthToken);
     }
     
     const response = {

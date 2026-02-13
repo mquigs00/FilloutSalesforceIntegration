@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import axios from 'axios';
-import { getSalesforceSecrets } from "../utils/secrets";
+import { getSalesforceSecrets } from "../utils/secrets.js";
 
 /**
  * Logs the name and label of each field for the given Object
@@ -169,7 +169,9 @@ export async function createLead(leadData, sfAuthToken) {
                 }
             }
         );
-        return response.data.id;
+
+        const leadId = response.data.id;
+        return leadId;
     } catch (error) {
         console.error("Error inserting lead:", error.response.data);
         throw error;
@@ -179,13 +181,13 @@ export async function createLead(leadData, sfAuthToken) {
 /**
  * Creates the Account
  * 
- * @param {json} accountData 
+ * @param {Object} accountData 
  * @param {*} sfAuthToken
- * @returns 
+ * @returns accountId - the ID of the newly created Account
  */
 export async function createAccount(accountData, sfAuthToken) {
     try {
-        const instanceUrl = tokenData.instance_url
+        const instanceUrl = sfAuthToken.instance_url
 
         const response = await axios.post(
             `${instanceUrl}/services/data/v61.0/sobjects/Account`,
@@ -208,9 +210,11 @@ export async function createAccount(accountData, sfAuthToken) {
             }
         );
 
-        return response.data.id;
+        const accountId = response.data.id;
+
+        return accountId;
     } catch (error) {
-        console.error("Error creating Account: ", error.response.data);
+        console.error("Error creating Account: ", error.response.data || error.message);
         throw error;
     }
 }

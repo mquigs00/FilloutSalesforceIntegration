@@ -1,3 +1,7 @@
+import axios from 'axios';
+import {getStateCode} from '../mappings/states.js';
+import {getFilloutKey} from '../utils/secrets.js';
+
 /**
  * Retrieve the answer from the Fillout answers
  * 
@@ -22,7 +26,7 @@ function getAnswerForQuestion(questions, questionName) {
  * @param {str} filloutKey 
  * @returns 
  */
-export async function downloadIntake(documentUrl, filloutKey) {
+async function downloadIntake(documentUrl, filloutKey) {
     try {
         const response = await axios.get(documentUrl, {
             headers: {
@@ -39,6 +43,16 @@ export async function downloadIntake(documentUrl, filloutKey) {
         });
         throw error;
     }
+}
+
+export async function fetchIntakeAsBase64(intakeURL) {
+    const filloutKey = await getFilloutKey();
+    const intakeBuffer = await downloadIntake(intakeURL, filloutKey)
+
+    if (!intakeBuffer || intakeBuffer.length === 0) {
+        throw new Error("Download PDF is empty");
+    }
+    return intakeBuffer.toString("base64");
 }
 
 /**
@@ -184,7 +198,7 @@ function parseAddress(questions) {
         streetAddress: address.address,
         city: address.city,
         state: address.state,
-        stateCode: getStateCode(state),
+        stateCode: getStateCode(address.state),
         zipcode: address.zipCode
     }
 }
@@ -198,7 +212,7 @@ function parseAddress(questions) {
 export function parseSubmission(eventBody) {
     let questions = eventBody.submission.questions;
 
-    const householdMembers = parseHouseholdMembers(questions, householdSize);
+    const householdMembers = parseHouseholdMembers(questions);
     const address = parseAddress(questions);
     const leadData = buildLeadData(questions, address);
     const accountData = buildAccountData(questions, address);

@@ -1,6 +1,6 @@
 # FilloutSalesforceIntegration
 ## Impact:
-This integation connects Fillout form submissions to the Salesforce BenePhilly User System (BUS) to automatically create Leads Accounts, and Contacts. This reduces the need for the counselors to perform manual data entry and maintains data integrity.
+This integation connects Fillout form submissions to the Salesforce BenePhilly User System (BUS) to automatically create Leads, Accounts, and Contacts when a potential client submits their Fillout intake form. This reduces the need for the counselors to perform manual data entry and maintains data integrity.
 
 For each new household, counselors currently have to manually enter:
 - A Lead (12 fields)
@@ -15,7 +15,7 @@ This integration can help automate the entry of:
 | Scenario | # of Manually Entered Fields (w/o integration) | # of Manual Entered Fields (w/ integration) | Reduction % |
 |----------|------------------------------------------------|----------------------------------------------|-------------|
 | Household of 1 (homeless) | 49 | 7 | 86% |
-| Household of 3 (renting) | 76 | 10 | 86% |
+| Household of 3 (renting) | 76 | 10 | 87% |
 | Household of 6 (homeowner) | 115 | 13 | 89% |
 
 

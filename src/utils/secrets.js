@@ -33,7 +33,7 @@ async function getPrivateKey() {
  * 
  * @returns secrets - the JSON object with the four values
  */
-async function getSalesforceSecrets() {
+export async function getSalesforceSecrets() {
     try {
         const command = new GetSecretValueCommand({
             SecretId: "arn:aws:secretsmanager:us-east-1:182486377871:secret:SF-Sandbox-Credentials-OMWAfi"
