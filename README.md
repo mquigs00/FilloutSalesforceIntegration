@@ -21,7 +21,7 @@ This integration can help automate the entry of:
 
 Many agencies already use digital forms to collect clients' intake data. Rather than requiring counselors to read through client submissions and manually their answers into the BUS, this integration allows clients to send their data into the BUS without ever directly interacting with the BUS.
 
-By having the Lead, Account, and Contacts created instantly when a client requests services, counselors can simply search for their Account at appointment time. Once found, the counselor can click "Check Eligibility" and a Salesforce Flow can pre-populate most of the Screeber fields using the data in the Account and Contacts. This allows counselors to quickly determine eligibility of their clients for public benefits programs and move on to filling out those applications.
+By having the Lead, Account, and Contacts created instantly when a client requests services, counselors can simply search for their Account at appointment time. Once found, the counselor can click "Check Eligibility" and a Salesforce Flow can pre-populate most of the Screener fields using the data in the Account and Contacts. This allows counselors to quickly determine eligibility of their clients for public benefits programs and move on to filling out those applications.
 
 ## Pre-Requisites:
 \* Every pre-requisite is free (or at least provides a limited free version), except for the AWS Secrets. This integration requires three secrets, which each cost ~$2.50 per month to store in AWS
@@ -81,6 +81,16 @@ When creating each secret, use "Other type of secret"
         - fillout-api: paste the API key you created in Fillout
         - webhook-secret: paste the webhook secret you generated
 
+## System Diagrams
+### Data Ingestion Design
+This is where the integration code is utilized to parse the Fillout submission and create objects in Salesforce
+
+![Data Ingestion Design](docs/Data-Ingestion-Diagram.png)
+
+### Screener Auto-Populate Design
+After this integration code has created the Lead, Account, and Contacts, a Salesforce flow can use the data to auto-populate the Screener fields
+
+![Screener Auto-Populate Design](docs/Screener-Auto-Populate-Diagram.png)
 
 ## Troubleshooting / Common Errors
 ### OAuth Error: `invalid_grant`
