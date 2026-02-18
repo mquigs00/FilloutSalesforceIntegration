@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import axios from 'axios';
 import { getSalesforceSecrets } from "../utils/secrets.js";
+import {buildLeadPayload} from "./buildLeadPayload.js";
 
 /**
  * Logs the name and label of each field for the given Object
@@ -138,29 +139,11 @@ export async function duplicateLeadExists(leadData, sfAuthToken) {
  */
 export async function createLead(leadData, sfAuthToken) {
     try {
-        console.log("Inserting lead");
         const instanceUrl = sfAuthToken.instance_url
-        console.log("State: " + leadData.address.stateCode);
+        const leadPayload = buildLeadPayload(leadData);
         const response = await axios.post(
             `${instanceUrl}/services/data/v61.0/sobjects/Lead`,
-            {
-                FirstName: leadData.personal.firstName,
-                LastName: leadData.personal.lastName,
-                Street: leadData.address.streetAddress,
-                City: leadData.address.city,
-                PostalCode: leadData.address.zipcode,
-                Country: "US",
-                State: leadData.address.state,
-                Phone: leadData.contact.phone,
-                Email: leadData.contact.email,
-                Primary_Language__c: leadData.contact.primaryLanguage,
-                Household_Size__c: leadData.household.householdSize,
-                Estimated_Monthly_Household_Income__c: leadData.household.householdMonthlyIncome,
-                Date__c: leadData.dateOfSubmission,
-                Company: "Self",
-                Status: "Closed - Converted",
-                OwnerId: '005cn000006WqRS'
-            },
+            leadPayload,
             {
                 headers: {
                     'Authorization': `Bearer ${sfAuthToken.access_token}`,
@@ -228,12 +211,6 @@ export async function createAccount(accountData, sfAuthToken) {
  */
 export async function insertHouseholdMembers(householdMembers, accountId, sfAuthToken) {
     const instanceUrl = sfAuthToken.instance_url
-
-    const disabledMap = {
-        "Yes": true,
-        "No": false
-    }
-
     try {
         let phone, email;
         for (let i = 0; i < householdMembers.length; i++) {

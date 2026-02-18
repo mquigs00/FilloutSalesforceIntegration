@@ -1,5 +1,3 @@
-import { getDaysInMonth } from "date-fns";
-
 export const educationMap = {
     "Grades 0-8": ELEMENTARY,
     "Grades 9-12 (No HS Degree)": HIGH_SCHOOL_NON_GRADUATE,

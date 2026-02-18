@@ -1,5 +1,5 @@
 # FilloutSalesforceIntegration
-## Impact:
+## Impact
 This integation connects Fillout form submissions to the Salesforce BenePhilly User System (BUS) to automatically create Leads, Accounts, and Contacts when a potential client submits their Fillout intake form. This reduces the need for the counselors to perform manual data entry and maintains data integrity.
 
 For each new household, counselors currently have to manually enter:
@@ -23,7 +23,7 @@ Many agencies already use digital forms to collect clients' intake data. Rather 
 
 By having the Lead, Account, and Contacts created instantly when a client requests services, counselors can simply search for their Account at appointment time. Once found, the counselor can click "Check Eligibility" and a Salesforce Flow can pre-populate most of the Screener fields using the data in the Account and Contacts. This allows counselors to quickly determine eligibility of their clients for public benefits programs and move on to filling out those applications.
 
-## Pre-Requisites:
+## Pre-Requisites
 \* Every pre-requisite is free (or at least provides a limited free version), except for the AWS Secrets. This integration requires three secrets, which each cost ~$2.50 per month to store in AWS
 1. Fillout
     - A Fillout account
@@ -35,7 +35,7 @@ By having the Lead, Account, and Contacts created instantly when a client reques
     - An AWS Account
     - Access to Secrets Manager, Lambda, and API Gateway (also ideally access to CloudWatch logs for debugging)
 
-## Key Components:
+## Key Components
 1. Webhook Setup
     - A Fillout webhook is created and points to an AWS POST API endpoint
     - The webhook sends JSON payloads of form submissions to the endpoint
@@ -62,7 +62,32 @@ By having the Lead, Account, and Contacts created instantly when a client reques
 - Secrets Management: AWS Secrets Manager stores all sensitive credentials (private key, client ID, webhook secret), accessed only by the Lambda function using least-privilege
 IAM roles.
 
-## Secrets:
+## Multiple Language Normalization
+I am currently working on making this integration able to handle Fillout submissions in multiple languages. Fillout offers form translations on the Business Plan ($89/month) so that users can pick their preferred language from a dropdown field and all questions and multiple-choice options will be translated. I haven't upgraded to Fillout Business so I can't test out this normalizatoin yet, but Fillout support was nice enough to test out how translations affect the JSON Payload for me. When a client changes the language, each question's id and name stays the same, but multiple choice values come in the client's selected language in the JSON payload. Since the BUS picklist options are all in English, all picklist values must be normalized to canonical values that can be mapped to the Salesforce picklist values. I added the normalization code to handle these changes, but I still would need to upgrade to Business to complete the maps for each language and test this out.
+
+Example: One question with same answer but different language selected
+```json
+{
+    "id": "7pZQ",
+    "name": "Highest Education Completed",
+    "type": "Dropdown",
+    "value": "Bob"
+}
+{
+    "id": "7pZQ",
+    "name": "Highest Education Completed",
+    "type": "Dropdown",
+    "value": "Graduado de Secundaria"
+}
+{
+    "id": "7pZQ",
+    "name": "Highest Education Completed",
+    "type": "Dropdown",
+    "value": "Tốt Nghiệp Trung Học"
+}
+```
+
+## Secrets
 There are three secrets necessary\
 When creating each secret, use "Other type of secret"
 1. Salesforce External App Credentials
@@ -159,9 +184,6 @@ Trying to create a Salesforce object but using a field name that doesn't exist
 1. Go into Setup --> Object Manager --> The object that the field belongs to
 2. On the left hand bar, click "Fields and Relationships"
 3. Verify that all fields listed in the axios API call match one of the values under "FIELD NAME"
-
-## Limitations / Next Steps
-Currently, this integration only supports form submissions in English. Fillout offers multilingual forms on their more expensive plan, but I have to not committed to upgrading plans. I am not sure how forms in Spanish or another language would change parsing the Submission.
 
 ## Example JSON Payload
 ```json

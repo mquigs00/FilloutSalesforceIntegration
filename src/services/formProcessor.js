@@ -1,6 +1,11 @@
 import { parseSubmission, fetchIntakeAsBase64} from '../utils/fillout.js';
-import {getSalesforceAuthToken, duplicateLeadExists, createLead, createAccount, insertHouseholdMembers, uploadIntakeToSalesforceRecord} from '../salesforce/client.js';
+import {getSalesforceAuthToken, duplicateLeadExists, createLead, createAccount, createContact, uploadIntakeToSalesforceRecord} from '../salesforce/client.js';
 
+async function insertHouseholdMembers(householdMembers, accountId, sfAuthToken) {
+    for (let i = 0; i < householdMembers.length; i++) {
+        createContact(householdMembers[i], accountId, sfAuthToken);
+    }
+}
 
 async function processSubmission(body, dependencies) {
     const {householdMembers, leadData, accountData} = parseSubmission(body);
@@ -14,7 +19,7 @@ async function processSubmission(body, dependencies) {
     const leadId = await dependencies.createLead(leadData, sfAuthToken);
     const accountId = await dependencies.createAccount(accountData, sfAuthToken);
 
-    await dependencies.insertHouseholdMembers(householdMembers, accountId, sfAuthToken);
+    await insertHouseholdMembers(householdMembers, accountId, sfAuthToken);
 
     return {
         status: 'success',
@@ -44,8 +49,7 @@ export const processForm = async (event) => {
         getToken: getSalesforceAuthToken,
         duplicateLeadExists,
         createLead,
-        createAccount,
-        insertHouseholdMembers
+        createAccount
     });
 
     if (result.status === 'success') {

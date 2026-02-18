@@ -1,5 +1,5 @@
-import {educationMap, maritalStatusMap, languageMap, ethnicityMap, raceMap, relationshipMap, healthInsuranceMap, genderMap} from '../normalization/index.js';
-import { sfEducationMap, sfEthnicityMap, sfGenderMap, sfHealthInsuranceMap, sfLanguageMap, sfMaritalStatusMap, sfRaceMap, sfRelationshipMap } from '../salesforce/picklistMaps.js';
+import {educationMap, maritalStatusMap, languageMap, ethnicityMap, raceMap, relationshipMap, healthInsuranceMap, genderMap, militaryStatusMap, housingStatusMap, familyTypeMap} from '../normalization/index.js';
+import { sfEducationMap, sfEthnicityMap, sfGenderMap, sfHealthInsuranceMap, sfLanguageMap, sfMaritalStatusMap, sfMilitaryStatusMap, sfRaceMap, sfRelationshipMap, sfHousingStatusMap, sffamilyTypeMap, sfFamilyTypeMap } from '../salesforce/picklistMaps.js';
 
 function normalizeWithMaps(value, filloutMap, sfMap) {
     if (!value) return null;
@@ -30,8 +30,17 @@ export const normalizeRace = (value) =>
 export const normalizeRelationship = (value) =>
     normalizeWithMaps(value, relationshipMap, sfRelationshipMap);
 
-export const normalizeHealthInsuranc = (value) =>
+export const normalizeHealthInsurance = (value) =>
     normalizeWithMaps(value, healthInsuranceMap, sfHealthInsuranceMap);
 
 export const normalizeGender = (value) =>
     normalizeWithMaps(value, genderMap, sfGenderMap);
+
+export const normalizeMilitaryStatus = (value) =>
+    normalizeWithMaps(value, militaryStatusMap, sfMilitaryStatusMap);
+
+export const normalizeHousingStatus = (value) =>
+    normalizeWithMaps(value, housingStatusMap, sfHousingStatusMap);
+
+export const normalizeFamilyType = (value) =>
+    normalizeWithMaps(value, familyTypeMap, sfFamilyTypeMap);
