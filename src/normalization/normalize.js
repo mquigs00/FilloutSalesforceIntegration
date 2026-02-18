@@ -1,5 +1,5 @@
 import {educationMap, maritalStatusMap, languageMap, ethnicityMap, raceMap, relationshipMap, healthInsuranceMap, genderMap, militaryStatusMap, housingStatusMap, familyTypeMap} from '../normalization/index.js';
-import { sfEducationMap, sfEthnicityMap, sfGenderMap, sfHealthInsuranceMap, sfLanguageMap, sfMaritalStatusMap, sfMilitaryStatusMap, sfRaceMap, sfRelationshipMap, sfHousingStatusMap, sffamilyTypeMap, sfFamilyTypeMap } from '../salesforce/picklistMaps.js';
+import { sfEducationMap, sfEthnicityMap, sfGenderMap, sfHealthInsuranceMap, sfLanguageMap, sfMaritalStatusMap, sfMilitaryStatusMap, sfRaceMap, sfRelationshipMap, sfHousingStatusMap, sfFamilyTypeMap } from '../salesforce/picklistMaps.js';
 
 function normalizeWithMaps(value, filloutMap, sfMap) {
     if (!value) return null;

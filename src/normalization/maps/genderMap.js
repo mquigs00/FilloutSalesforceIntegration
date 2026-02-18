@@ -1,5 +1,5 @@
 export const genderMap = {
-    "Man": MAN,
-    "Woman": WOMAN,
-    "Transgender": TRANSGENDER
+    "Man": "MAN",
+    "Woman": "WOMAN",
+    "Transgender": "TRANSGENDER"
 }

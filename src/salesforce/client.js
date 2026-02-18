@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import axios from 'axios';
 import { getSalesforceSecrets } from "../utils/secrets.js";
-import {buildLeadPayload} from "./buildLeadPayload.js";
+import { buildLeadPayload, buildContactPayload, buildAccountPayload } from "./buildPayloads.js";
 
 /**
  * Logs the name and label of each field for the given Object
@@ -203,50 +203,31 @@ export async function createAccount(accountData, sfAuthToken) {
 }
 
 /**
- * Inserts all of the household members into Salesforce as a Contact and link it to their Account
+ * Creates a Contact in Salesforce
  * 
- * @param {list} householdMembers
+ * @param {Object} - an object will all the necessary info about the Contact, except for which Account/Household they belong to
  * @param {int} accountId
  * @param {*} sfAuthToken
+ * @returns {int} contactId - the ID of the newly created Contact
  */
-export async function insertHouseholdMembers(householdMembers, accountId, sfAuthToken) {
-    const instanceUrl = sfAuthToken.instance_url
+export async function createContact(contactData, accountId, sfAuthToken) {
+    const instanceUrl = sfAuthToken.instance_url;
     try {
-        let phone, email;
-        for (let i = 0; i < householdMembers.length; i++) {
-            console.log(`Household member ${i+1}: ${householdMembers[i].firstName} ${householdMembers[i].lastName}`)
-            if (i == 0) {
-                phone = householdMembers[0].phoneNumber;
-                email = householdMembers[0].emailAddress;
-            }
+        const contactPayload = buildContactPayload(contactData, accountId);
 
-            console.log("Making axios call");
-
-            const response = await axios.post(
-                `${instanceUrl}/services/data/v61.0/sobjects/Contact`,
-                {
-                    FirstName: householdMembers[i].firstName,
-                    LastName: householdMembers[i].lastName,
-                    Relationship_to_Head_of_Household__c: householdMembers[i].relationship,
-                    Birthdate: householdMembers[i].birthdate,
-                    Gender_Identity__c: householdMembers[i].genderIdentity,
-                    Race__c: householdMembers[i].race,
-                    Hispanic_Status__c: householdMembers[i].ethnicity,
-                    Highest_Education_Completed__c: householdMembers[i].highestEducationCompleted,
-                    Marital_Status__c: householdMembers[i].maritalStatus,
-                    Military_Status__c: householdMembers[i].militaryStatus,
-                    Health_Insurance_Coverage__c: householdMembers[i].healthInsuranceCoverage,
-                    Disabled__c: disabledMap[householdMembers[i].isDisabled],
-                    AccountId: accountId,
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${sfAuthToken.access_token}`,
-                        'Content-Type': 'application/json'
-                    }
+        const response = await axios.post(
+            `${instanceUrl}/services/data/v61.0/sobjects/Contact`,
+            contactPayload,
+            {
+                headers: {
+                    'Authorization': `Bearer ${sfAuthToken.access_token}`,
+                    'Content-Type': 'application/json'
                 }
-            )
-        }
+            }
+        )
+
+        const contactId = response.data.id;
+        return contactId;
     } catch(error) {
         if (error.response) {
             console.error("Salesforce API error:", error.response.status, error.response.data);
