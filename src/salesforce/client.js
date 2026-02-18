@@ -200,7 +200,7 @@ export async function createAccount(accountData, sfAuthToken) {
                 Address__City__s: accountData.address.city,
                 Address__StateCode__s: accountData.address.stateCode,
                 Address__CountryCode__s: "US",
-                Address__PostalCode__s: accountData.address.zipcode,
+                Address__PostalCode__s: accountData.address.zipCode,
             },
             {
                 headers: {
@@ -281,7 +281,6 @@ export async function insertHouseholdMembers(householdMembers, accountId, sfAuth
         throw error;
     }
 }
-
 
 /**
  * Uploads the intake pdf file to the Salesforce record

@@ -1,19 +1,20 @@
 import axios from 'axios';
 import {getStateCode} from '../mappings/states.js';
 import {getFilloutKey} from '../utils/secrets.js';
+import { fieldMap, otherMembersFieldMap } from '../mappings/fieldMap.js';
 
 /**
  * Retrieve the answer from the Fillout answers
  * 
  * @param {Object[]} questions 
- * @param {str} questionName - the text that the user sees in Fillout (ex. "First Name")
+ * @param {str} questionId - the unique four letter id for the question
  * @returns questionObj.val - the answer to the question
  */
-function getAnswerForQuestion(questions, questionName) {
-    const questionObj = questions.find(question => question.name === questionName);                                                  // find the question with the matching name
+function getAnswerForQuestion(questions, questionId) {
+    const questionObj = questions.find(question => question.id === questionId);                                                  // find the question with the matching name
 
     if (!questionObj) {
-        throw new Error(`Question with name ${questionName} not found`);
+        throw new Error(`Question with name ${questionId} not found`);
     }
 
     return questionObj.value;                                                                                                           // value is the answer to the question
@@ -63,20 +64,20 @@ export async function fetchIntakeAsBase64(intakeURL) {
  */
 function parseHeadOfHousehold(questions) {
     return {
-        firstName: getAnswerForQuestion(questions, "First Name"),
-        lastName: getAnswerForQuestion(questions, "Last Name"),
+        firstName: getAnswerForQuestion(questions, fieldMap.firstName),
+        lastName: getAnswerForQuestion(questions, fieldMap.lastName),
         relationship: "Head of Household",
-        phone: getAnswerForQuestion(questions, "Phone Number"),
-        email: getAnswerForQuestion(questions, "Email"),
-        birthdate: getAnswerForQuestion(questions, "Birthdate"),
-        genderIdentity: getAnswerForQuestion(questions, "Gender Identity"),
-        maritalStatus: getAnswerForQuestion(questions, "Marital Status"),
-        race: getAnswerForQuestion(questions, "Race"),
-        highestEducationCompleted: getAnswerForQuestion(questions, "Highest Education Completed"),
-        militaryStatus: getAnswerForQuestion(questions, "Military Status"),
-        ethnicity: getAnswerForQuestion(questions, "Ethnicity"),
-        isDisabled: getAnswerForQuestion(questions, "Disabled?"),
-        healthInsuranceCoverage: getAnswerForQuestion(questions, "Health Insurance Coverage")
+        phone: getAnswerForQuestion(questions, fieldMap.phoneNumber),
+        email: getAnswerForQuestion(questions, fieldMap.email),
+        birthdate: getAnswerForQuestion(questions, fieldMap.birthdate),
+        genderIdentity: getAnswerForQuestion(questions, fieldMap.genderIdentity),
+        maritalStatus: getAnswerForQuestion(questions, fieldMap.maritalStatus),
+        race: getAnswerForQuestion(questions, fieldMap.race),
+        highestEducationCompleted: getAnswerForQuestion(questions, fieldMap.highestEducationCompleted),
+        militaryStatus: getAnswerForQuestion(questions, fieldMap.militaryStatus),
+        ethnicity: getAnswerForQuestion(questions, fieldMap.ethnicity),
+        isDisabled: getAnswerForQuestion(questions, fieldMap.isDisabled),
+        healthInsuranceCoverage: getAnswerForQuestion(questions, fieldMap.healthInsuraceCoverage)
     }
 }
 
@@ -91,19 +92,21 @@ function parseOtherHouseholdMembers(questions, householdSize) {
     let otherHouseholdMembers = [];
 
     for (let i = 2; i <= householdSize; i++) {
+        memberFields = otherMembersFieldMap[i];
+
         let nextMember = {}
-        nextMember.firstName = getAnswerForQuestion(questions, `Person ${i} First Name`);
-        nextMember.lastName = getAnswerForQuestion(questions, `Person ${i} Last Name`);
-        nextMember.birthdate = getAnswerForQuestion(questions, `Person ${i} Birthdate`);
-        nextMember.relationship = getAnswerForQuestion(questions, `Person ${i} Relationship to You`);
-        nextMember.genderIdentity = getAnswerForQuestion(questions, `Person ${i} Gender Identity`);
-        nextMember.maritalStatus = getAnswerForQuestion(questions, `Person ${i} Marital Status`);
-        nextMember.race = getAnswerForQuestion(questions, `Person ${i} Race`);
-        nextMember.highestEducationCompleted = getAnswerForQuestion(questions, `Person ${i} Highest Education Completed`);
-        nextMember.militaryStatus = getAnswerForQuestion(questions, `Person ${i} Military Status`);
-        nextMember.ethnicity = getAnswerForQuestion(questions, `Person ${i} Ethnicity`);
-        nextMember.isDisabled = getAnswerForQuestion(questions, `Is Person ${i} Disabled?`);
-        nextMember.healthInsuranceCoverage = getAnswerForQuestion(questions, `Person ${i} Health Insurance Coverage`);
+        nextMember.firstName = getAnswerForQuestion(questions, memberFields.firstName);
+        nextMember.lastName = getAnswerForQuestion(questions, memberFields.lastName);
+        nextMember.birthdate = getAnswerForQuestion(questions, memberFields.birthdate);
+        nextMember.relationship = getAnswerForQuestion(questions, memberFields.relationship);
+        nextMember.genderIdentity = getAnswerForQuestion(questions, memberFields.genderIdentity);
+        nextMember.maritalStatus = getAnswerForQuestion(questions, memberFields.maritalStatus);
+        nextMember.race = getAnswerForQuestion(questions, memberFields.race);
+        nextMember.highestEducationCompleted = getAnswerForQuestion(questions, memberFields.highestEducationCompleted);
+        nextMember.militaryStatus = getAnswerForQuestion(questions, memberFields.militaryStatus);
+        nextMember.ethnicity = getAnswerForQuestion(questions, memberFields.ethnicity);
+        nextMember.isDisabled = getAnswerForQuestion(questions, memberFields.isDisabled);
+        nextMember.healthInsuranceCoverage = getAnswerForQuestion(questions, memberFields.healthInsuranceCoverage);
         otherHouseholdMembers.push(nextMember);
     }
 
@@ -116,7 +119,7 @@ function parseOtherHouseholdMembers(questions, householdSize) {
  * @returns {Object[]}
  */
 function parseHouseholdMembers(questions) {
-    const householdSize = getAnswerForQuestion(questions, "Number of members in your household");
+    const householdSize = getAnswerForQuestion(questions, fieldMap.householdSize);
 
     const headOfHousehold = parseHeadOfHousehold(questions);
     const otherHouseholdMembers = parseOtherHouseholdMembers(questions, householdSize);
@@ -134,13 +137,13 @@ function parseHouseholdMembers(questions) {
 function buildLeadData(questions, address) {
     const leadData = {
         personal: {
-            firstName: getAnswerForQuestion(questions, "First Name"),
-            lastName: getAnswerForQuestion(questions, "Last Name")
+            firstName: getAnswerForQuestion(questions, fieldMap.firstName),
+            lastName: getAnswerForQuestion(questions, fieldMap.lastName)
         },
         contact: {
-            email: getAnswerForQuestion(questions, "Email"),
-            phone: getAnswerForQuestion(questions, "Phone Number"),
-            primaryLanguage: getAnswerForQuestion(questions, "Primary Language")
+            email: getAnswerForQuestion(questions, fieldMap.email),
+            phone: getAnswerForQuestion(questions, fieldMap.phoneNumber),
+            primaryLanguage: getAnswerForQuestion(questions, fieldMap.primaryLanguage)
         },
         address: {
             streetAddress: address.streetAddress,
@@ -150,8 +153,8 @@ function buildLeadData(questions, address) {
             zipcode: address.zipcode
         },
         household: {
-            householdSize: getAnswerForQuestion(questions, "Number of members in your household"),
-            householdMonthlyIncome: getAnswerForQuestion(questions, "Estimated Monthly Household Income")
+            householdSize: getAnswerForQuestion(questions, fieldMap.householdSize),
+            householdMonthlyIncome: getAnswerForQuestion(questions, fieldMap.monthlyHouseholdIncome)
         },
         dateOfSubmission: getAnswerForQuestion(questions, "Date")
     };
@@ -168,11 +171,11 @@ function buildLeadData(questions, address) {
  */
 function buildAccountData(questions, address) {
     const accountData = {
-        firstName: getAnswerForQuestion(questions, "First Name"),
-        lastName: getAnswerForQuestion(questions, "Last Name"),
-        primaryLanguage: getAnswerForQuestion(questions, "Primary Language"),
-        housingStatus: getAnswerForQuestion(questions, "Housing Status"),
-        familyType: getAnswerForQuestion(questions, "Family Type"),
+        firstName: getAnswerForQuestion(questions, fieldMap.firstName),
+        lastName: getAnswerForQuestion(questions, fieldMap.lastName),
+        primaryLanguage: getAnswerForQuestion(questions, fieldMap.primaryLanguage),
+        housingStatus: getAnswerForQuestion(questions, fieldMap.housingStatus),
+        familyType: getAnswerForQuestion(questions, fieldMap.familyType),
         address: {
             streetAddress: address.streetAddress,
             city: address.city,
@@ -192,7 +195,7 @@ function buildAccountData(questions, address) {
  * @returns {Object} the address components
  */
 function parseAddress(questions) {
-    const address = getAnswerForQuestion(questions, "Your address");
+    const address = getAnswerForQuestion(questions, fieldMap.address);
     
     return {
         streetAddress: address.address,
