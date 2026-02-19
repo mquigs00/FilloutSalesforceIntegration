@@ -1,6 +1,4 @@
-import { normalizeLanguage, normalizeHousingStatus, normalizeFamilyType} from "../normalization";
-import { normalizeEducation, normalizeEthnicity, normalizeGender, normalizeHealthInsurance, normalizeMaritalStatus, normalizeRace, normalizeRelationship, normalizeMilitaryStatus } from "../normalization";
-import { normalizeLanguage } from "../normalization"
+import { normalizeLanguage, normalizeHousingStatus, normalizeFamilyType, normalizeEducation, normalizeEthnicity, normalizeGender, normalizeHealthInsurance, normalizeMaritalStatus, normalizeRace, normalizeRelationship, normalizeMilitaryStatus} from "../normalization/normalize.js";
 
 export function buildAccountPayload(accountData) {
     return {

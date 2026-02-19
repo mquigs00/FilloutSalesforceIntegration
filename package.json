@@ -2,6 +2,7 @@
   "name": "filloutsalesforceintegration",
   "version": "1.0.0",
   "description": "A custom middleware function to receive a webhook containing a Fillout form response and create a new lead.",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "node --test"

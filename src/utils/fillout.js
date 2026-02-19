@@ -66,7 +66,7 @@ function parseHeadOfHousehold(questions) {
     return {
         firstName: getAnswerForQuestion(questions, fieldMap.firstName),
         lastName: getAnswerForQuestion(questions, fieldMap.lastName),
-        relationship: "Head of Household",
+        relationship: "head of household",
         phone: getAnswerForQuestion(questions, fieldMap.phoneNumber),
         email: getAnswerForQuestion(questions, fieldMap.email),
         birthdate: getAnswerForQuestion(questions, fieldMap.birthdate),
@@ -92,7 +92,7 @@ function parseOtherHouseholdMembers(questions, householdSize) {
     let otherHouseholdMembers = [];
 
     for (let i = 2; i <= householdSize; i++) {
-        memberFields = otherMembersFieldMap[i];
+        let memberFields = otherMembersFieldMap[i];
 
         let nextMember = {}
         nextMember.firstName = getAnswerForQuestion(questions, memberFields.firstName);
@@ -156,7 +156,7 @@ function buildLeadData(questions, address) {
             householdSize: getAnswerForQuestion(questions, fieldMap.householdSize),
             householdMonthlyIncome: getAnswerForQuestion(questions, fieldMap.monthlyHouseholdIncome)
         },
-        dateOfSubmission: getAnswerForQuestion(questions, "Date")
+        dateOfSubmission: getAnswerForQuestion(questions, fieldMap.date)
     };
 
     return leadData;
@@ -181,7 +181,7 @@ function buildAccountData(questions, address) {
             city: address.city,
             state: address.state,
             stateCode: address.stateCode,
-            zipcode: address.zipCode
+            zipCode: address.zipCode
         }
     };
 
@@ -202,7 +202,7 @@ function parseAddress(questions) {
         city: address.city,
         state: address.state,
         stateCode: getStateCode(address.state),
-        zipcode: address.zipCode
+        zipCode: address.zipCode
     }
 }
 

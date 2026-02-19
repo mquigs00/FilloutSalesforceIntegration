@@ -79,6 +79,7 @@ export const raceMap = {
 }
 
 export const relationshipMap = {
+    HEAD_OF_HOUSEHOLD: ["head of household"],
     SPOUSE: ["spouse", "cónyuge"],
     MINOR_CHILD: ["minor child"],
     ADULT_CHILD: ["adult child"],

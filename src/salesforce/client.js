@@ -214,6 +214,7 @@ export async function createContact(contactData, accountId, sfAuthToken) {
     const instanceUrl = sfAuthToken.instance_url;
     try {
         const contactPayload = buildContactPayload(contactData, accountId);
+        console.log("Contact Payload: ", contactPayload)
 
         const response = await axios.post(
             `${instanceUrl}/services/data/v61.0/sobjects/Contact`,
@@ -225,7 +226,8 @@ export async function createContact(contactData, accountId, sfAuthToken) {
                 }
             }
         )
-
+        
+        console.log("Attempted to insert Contact");
         const contactId = response.data.id;
         return contactId;
     } catch(error) {

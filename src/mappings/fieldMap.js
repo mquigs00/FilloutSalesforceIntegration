@@ -17,7 +17,8 @@ export const fieldMap = {
   housingStatus: "pqa9",
   householdSize: "k4aa",
   familyType: "od7a",
-  monthlyHouseholdIncome: "vTPE"
+  monthlyHouseholdIncome: "vTPE",
+  date: "h1ky"
 };
 
 export const otherMembersFieldMap = {
