@@ -1,6 +1,6 @@
 export const languageMap = {
-    "English": "ENGLISH",
-    "Inglés": "ENGLISH",
-    "Spanish": "SPANISH",
-    "Español": "SPANISH"
+    "english": "ENGLISH",
+    "inglés": "ENGLISH",
+    "spanish": "SPANISH",
+    "español": "SPANISH"
 }

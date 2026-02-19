@@ -1,6 +1,7 @@
 export const relationshipMap = {
-    "Spouse": "SPOUSE",
-    "Minor Child": "MINOR_CHILD",
-    "Adult Child": "ADULT_CHILD",
-    "Other Residing in House": "OTHER"
+    "spouse": "SPOUSE",
+    "cónyuge": "SPOUSE",
+    "minor child": "MINOR_CHILD",
+    "adult child": "ADULT_CHILD",
+    "other residing in house": "OTHER"
 }

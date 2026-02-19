@@ -147,7 +147,7 @@ function buildLeadData(questions, address) {
         },
         address: {
             streetAddress: address.streetAddress,
-            city: address.streetAddress,
+            city: address.city,
             state: address.state,
             stateCode: address.stateCode,
             zipcode: address.zipcode

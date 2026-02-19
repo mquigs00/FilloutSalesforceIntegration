@@ -1,7 +1,7 @@
 export const maritalStatusMap = {
-    "Single": "SINGLE",
-    "Married, Living Together": "MARRIED_LIVING_TOGETHER",
-    "Married, Living Separately": "MARRIED_LIVING_SEPARATELY",
-    "Divorced": "DIVORCED",
-    "Widowed": "WIDOWED"
+    "single": "SINGLE",
+    "married, living together": "MARRIED_LIVING_TOGETHER",
+    "married, living separately": "MARRIED_LIVING_SEPARATELY",
+    "divorced": "DIVORCED",
+    "widowed": "WIDOWED"
 }

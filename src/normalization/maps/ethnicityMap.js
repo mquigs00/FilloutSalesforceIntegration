@@ -1,4 +1,5 @@
 export const ethnicityMap = {
-    "Hispanic, Latino, or Spanish Origins": "HISPANIC",
-    "No Hispanic, Latino, or Spanish Origins": "NON_HISPANIC"
+    "hispanic, latino, or spanish origins": "HISPANIC",
+    "orígenes hispanos, latinos o españoles": "HISPANIC",
+    "no hispanic, latino, or spanish origins": "NON_HISPANIC"
 }

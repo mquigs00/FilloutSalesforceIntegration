@@ -1,8 +1,9 @@
 export const raceMap = {
-    "Asian": "ASIAN",
-    "Black / African American": "AFRICAN_AMERICAN",
-    "Native American /  Alaskan Native": "NATIVE_AMERICAN",
-    "Native Hawaiian / Pacific Islander": "PACIFIC_ISLANDER",
-    "White": "WHITE",
-    "Multi-Race": "MULTI_RACE"
+    "asian": "ASIAN",
+    "black / african american": "AFRICAN_AMERICAN",
+    "negro / afroamericano": "AFRICAN_AMERICAN",
+    "native american /  alaskan native": "NATIVE_AMERICAN",
+    "native hawaiian / pacific sslander": "PACIFIC_ISLANDER",
+    "white": "WHITE",
+    "multi-race": "MULTI_RACE"
 }
