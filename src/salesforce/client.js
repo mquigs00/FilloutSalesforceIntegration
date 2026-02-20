@@ -7,7 +7,7 @@ import { buildLeadPayload, buildContactPayload, buildAccountPayload } from "./bu
  * Logs the name and label of each field for the given Object
  * 
  * @param {string} objectName - the name of the Salesforce Object (Lead, Account, Contact)
- * @param {string} sfAuthToken
+ * @param {JWT Object} sfAuthToken
  * @returns
  */
 async function verifySalesforceSchema(objectName, sfAuthToken) {
@@ -92,7 +92,7 @@ export async function getSalesforceAuthToken() {
  * 
  * @param {Object} leadData 
  * @param {JWT Object} salesforceAccessToken
- * @returns duplicateLeadExists - boolean indicating whether a duplicate lead exists
+ * @returns duplicateLeadExists {bool}
  */
 export async function duplicateLeadExists(leadData, sfAuthToken) {
     try {
@@ -133,9 +133,9 @@ export async function duplicateLeadExists(leadData, sfAuthToken) {
  * Creates the Lead in Salesforce
  * 
  * @param {json} leadData
- * @param {*} sfAuthToken
+ * @param {JWT Object} sfAuthToken
  * 
- * @returns the id of the new Lead record
+ * @returns leadId {string} - the id of the newly created Lead
  */
 export async function createLead(leadData, sfAuthToken) {
     try {
@@ -165,26 +165,17 @@ export async function createLead(leadData, sfAuthToken) {
  * Creates the Account
  * 
  * @param {Object} accountData 
- * @param {*} sfAuthToken
- * @returns accountId - the ID of the newly created Account
+ * @param {JWT Object} sfAuthToken
+ * @returns accountId {string} - the ID of the newly created Account
  */
 export async function createAccount(accountData, sfAuthToken) {
     try {
         const instanceUrl = sfAuthToken.instance_url
+        const accountPayload = buildAccountPayload(accountData)
 
         const response = await axios.post(
             `${instanceUrl}/services/data/v61.0/sobjects/Account`,
-            {
-                Name: `${accountData.firstName} ${accountData.lastName} Household`,
-                Primary_Language__c: accountData.primaryLanguage,
-                Family_Type__c: accountData.familyType,
-                Housing_Status__c: accountData.housingStatus,
-                Address__Street__s: accountData.address.streetAddress,
-                Address__City__s: accountData.address.city,
-                Address__StateCode__s: accountData.address.stateCode,
-                Address__CountryCode__s: "US",
-                Address__PostalCode__s: accountData.address.zipCode,
-            },
+            accountData,
             {
                 headers: {
                     'Authorization': `Bearer ${sfAuthToken.access_token}`,
@@ -207,8 +198,8 @@ export async function createAccount(accountData, sfAuthToken) {
  * 
  * @param {Object} - an object will all the necessary info about the Contact, except for which Account/Household they belong to
  * @param {int} accountId
- * @param {*} sfAuthToken
- * @returns {int} contactId - the ID of the newly created Contact
+ * @param {JWT Object} sfAuthToken
+ * @returns {string} contactId - the ID of the newly created Contact
  */
 export async function createContact(contactData, accountId, sfAuthToken) {
     const instanceUrl = sfAuthToken.instance_url;
@@ -245,11 +236,11 @@ export async function createContact(contactData, accountId, sfAuthToken) {
 /**
  * Uploads the intake pdf file to the Salesforce record
  * 
- * @param {*} base64Pdf 
- * @param {*} fileName 
- * @param {} recordId 
- * @param {*} sfAuthToken
- * @returns 
+ * @param {string} base64Pdf - the document as base 64 text
+ * @param {string} fileName - the name that will be displayed on the file in Salesforce
+ * @param {string} recordId - the ID of the Salesforce record that the document needs to be attached to
+ * @param {JWT Object} sfAuthToken - the Salesforce Authentication token
+ * @returns response.data.id {string} - the Salesforce id of the document
  */
 export async function uploadIntakeToSalesforceRecord(base64Pdf, fileName, recordId, sfAuthToken) {
     const instanceUrl = sfAuthToken.instance_url;

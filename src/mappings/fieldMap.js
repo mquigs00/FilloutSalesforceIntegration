@@ -59,7 +59,7 @@ export const otherMembersFieldMap = {
     race: "pmVD",
     ethnicity: "cSWq",
     maritalStatus: "oHNB",
-    hghestEducationCompleted: "kspP",
+    highestEducationCompleted: "kspP",
     militaryStatus: "gGDd",
     healthInsuranceCoverage: "b84e",
     isDisabled: "o9TG"
@@ -67,7 +67,7 @@ export const otherMembersFieldMap = {
   5: {
     firstName: "kpRp",
     lastName: "5YDA",
-    rlationship: "aqfv",
+    relationship: "aqfv",
     birthdate: "mwvh",
     genderIdentity: "w41A",
     race: "bEC6",

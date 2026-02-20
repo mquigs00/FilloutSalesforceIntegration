@@ -4,7 +4,7 @@ import {getFilloutKey} from '../utils/secrets.js';
 import { fieldMap, otherMembersFieldMap } from '../mappings/fieldMap.js';
 
 /**
- * Retrieve the answer from the Fillout answers
+ * Retrieve the answer from the target Fillout question
  * 
  * @param {Object[]} questions 
  * @param {str} questionId - the unique four letter id for the question
@@ -25,10 +25,11 @@ function getAnswerForQuestion(questions, questionId) {
  * 
  * @param {str} documentUrl 
  * @param {str} filloutKey 
- * @returns 
+ * @returns {Buffer} Buffer.from(response.data) - 
  */
 async function downloadIntake(documentUrl, filloutKey) {
     try {
+        // retreives the intake pdf as raw bytes instead of JSON
         const response = await axios.get(documentUrl, {
             headers: {
                 'Authorization': `Bearer ${filloutKey}`,
@@ -46,6 +47,12 @@ async function downloadIntake(documentUrl, filloutKey) {
     }
 }
 
+/**
+ * Downloads the intake PDF from Fillout and converts it to Base64 text
+ * 
+ * @param {String} intakeURL 
+ * @returns {String} - the intake document as a Base64 String
+ */
 export async function fetchIntakeAsBase64(intakeURL) {
     const filloutKey = await getFilloutKey();
     const intakeBuffer = await downloadIntake(intakeURL, filloutKey)

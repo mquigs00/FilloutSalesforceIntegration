@@ -45,7 +45,6 @@ export async function getSalesforceSecrets() {
             throw new Error("Secret String is empty or undefined");
         }
 
-        console.log("Received response for Salesforce credentials");
         const secrets = JSON.parse(response.SecretString);
 
         const privateKey = await getPrivateKey()
@@ -65,8 +64,9 @@ export async function getSalesforceSecrets() {
 let cachedFilloutKey;
 
 /**
+ * Retrieves the Fillout API key from AWS Secrets Manager
  * 
- * @returns 
+ * @returns secret.token - the Fillout API key
  */
 export async function getFilloutKey() {
     if (cachedFilloutKey) {
