@@ -1,13 +1,15 @@
 # FilloutSalesforceIntegration
-## Impact
-This integation connects Fillout form submissions to the Salesforce BenePhilly User System (BUS) to automatically create Leads, Accounts, and Contacts when a potential client submits their Fillout intake form. This reduces the need for the counselors to perform manual data entry and maintains data integrity.
+## Background and Impact
+This integation connects Fillout form submissions to the Salesforce to automatically create Leads, Accounts, and Contacts when a potential client submits their Fillout intake form. This reduces the need for the counselors to perform manual data entry and maintains data integrity.
 
-For each new household, counselors currently have to manually enter:
+I designed and implemented this while working at a non-profit. Our counselors would help residents apply for public benefits. On top of completing the application, counselors would have to complete a significant amount of data entry in Salesforce so our grantor could keep track of the applications and make sure we met our contract requirements. I had already transformed our data intake from paper to digital forms using Fillout.com, and saw an opportunity to reduce data entry and save the counselors time. I pitched this to the grantor and they let me implement it in their Salesforce Sandbox, but I ended up switching to a new company before we every got it into production.
+
+For each new household, counselors would have to manually enter:
 - A Lead (12 fields)
 - A Screener (25-36 fields)
 - A Contact (12 fields) for each family member
 
-This integration can help automate the entry of:
+This integration would automate the entry of:
 - All 12 Lead Fields
 - All 12 Contact fields per family member
 - 18 of the Screener fields (when paired with a Salesforce flow)
@@ -19,7 +21,7 @@ This integration can help automate the entry of:
 | Household of 6 (homeowner) | 115 | 13 | 89% |
 
 
-Many agencies already use digital forms to collect clients' intake data. Rather than requiring counselors to read through client submissions and manually their answers into the BUS, this integration allows clients to send their data into the BUS without ever directly interacting with the BUS.
+Many agencies already use digital forms to collect clients' intake data. Rather than requiring counselors to read through client submissions and manually their answers into the Salesforce, this integration allows clients to send their data into the Salesforce without ever directly interacting with the system.
 
 By having the Lead, Account, and Contacts created instantly when a client requests services, counselors can simply search for their Account at appointment time. Once found, the counselor can click "Check Eligibility" and a Salesforce Flow can pre-populate most of the Screener fields using the data in the Account and Contacts. This allows counselors to quickly determine eligibility of their clients for public benefits programs and move on to filling out those applications.
 
@@ -45,7 +47,7 @@ By having the Lead, Account, and Contacts created instantly when a client reques
     - index.mjs calls formProcessor.js, which orchestrates the process
     - formProcessor.js first calls fillout.js to parse the form submission and group the fields required for each Salesforce record
 4. Duplicate Check
-    - formProcessor.js uses client.js functions to query the BUS for an existing Lead that meets the duplicate rule (matching First Name, Last Name, and Email Address)
+    - formProcessor.js uses client.js functions to query Salesforce for an existing Lead that meets the duplicate rule (matching First Name, Last Name, and Email Address)
     - If a matching Lead exists, the lambda handler stops and no new records are created
 5. Record Creation
     - If there is no matching Lead, formProcessor.js creates:
@@ -63,7 +65,7 @@ By having the Lead, Account, and Contacts created instantly when a client reques
 IAM roles.
 
 ## Multiple Language Normalization
-I am currently working on making this integration able to handle Fillout submissions in multiple languages. Fillout offers form translations on the Business Plan ($89/month) so that users can pick their preferred language from a dropdown field and all questions and multiple-choice options will be translated. I haven't upgraded to Fillout Business so I can't test out this normalizatoin yet, but Fillout support was nice enough to test out how translations affect the JSON Payload for me. When a client changes the language, each question's id and name stays the same, but multiple choice values come in the client's selected language in the JSON payload. Since the BUS picklist options are all in English, all picklist values must be normalized to canonical values that can be mapped to the Salesforce picklist values. I added the normalization code to handle these changes, but I still would need to upgrade to Business to complete the maps for each language and test this out.
+The next step would be making this integration able to handle Fillout submissions in multiple languages. Fillout offers form translations on the Business Plan ($89/month) so that users can pick their preferred language from a dropdown field and all questions and multiple-choice options will be translated. I haven't upgraded to Fillout Business so I can't test out this normalizatoin yet, but Fillout support was nice enough to test out how translations affect the JSON Payload for me. When a client changes the language, each question's id and name stays the same, but multiple choice values come in the client's selected language in the JSON payload. Since the Salesforce picklist options are all in English, all picklist values must be normalized to canonical values that can be mapped to the Salesforce picklist values. I added the normalization code to handle these changes, but I still would need to upgrade to Business to complete the maps for each language and test this out.
 
 Example: One question with same answer but different language selected
 ```json
